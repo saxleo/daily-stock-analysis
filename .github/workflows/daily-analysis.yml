@@ -36,4 +36,11 @@ jobs:
           OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           MARKET_REVIEW_ENABLED: 'true'
-        run: python main.py --mode ${{ github.event.inputs.mode || 'full' }}
+        run: |
+  if [ "${{ github.event.inputs.mode }}" == "market-only" ]; then
+    python main.py --market-review --force-run
+  elif [ "${{ github.event.inputs.mode }}" == "stocks-only" ]; then
+    python main.py --no-market-review --force-run
+  else
+    python main.py --force-run
+  fi
