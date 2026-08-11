@@ -2,6 +2,7 @@ name: 每日股票分析
 
 on:
   schedule:
+    # UTC 10:00 = 北京时间 18:00（A股收盘后），周一至周五
     - cron: '0 10 * * 1-5'
   workflow_dispatch:
     inputs:
@@ -15,32 +16,65 @@ on:
           - market-only
           - stocks-only
 
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-analysis
+  cancel-in-progress: false
+
 jobs:
   analyze:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
+
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
-      - run: |
+
+      - name: 安装依赖
+        run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-      - run: mkdir -p data logs reports
-      - env:
+
+      - name: 准备目录
+        run: mkdir -p data logs reports
+
+      - name: 运行分析
+        env:
           STOCK_LIST: ${{ secrets.STOCK_LIST }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
           OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           MARKET_REVIEW_ENABLED: 'true'
-              run: |
-        if [ "${{ github.event.inputs.mode }}" == "market-only" ]; then
-          python main.py --market-review --force-run
-        elif [ "${{ github.event.inputs.mode }}" == "stocks-only" ]; then
-          python main.py --no-market-review --force-run
-        else
-          python main.py --force-run
-        fi
+        run: |
+          MODE="${{ github.event.inputs.mode }}"
+          # 定时触发时 MODE 为空 → 走 full 分支
+          # 定时跑不加 --force-run，让交易日检查在节假日自动跳过；
+          # 手动触发才强制执行
+          FORCE=""
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            FORCE="--force-run"
+          fi
+          if [ "$MODE" == "market-only" ]; then
+            python main.py --market-review $FORCE
+          elif [ "$MODE" == "stocks-only" ]; then
+            python main.py --no-market-review $FORCE
+          else
+            python main.py $FORCE
+          fi
+
+      - name: 上传日志与报告（失败也上传，便于排查）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-reports-${{ github.run_number }}
+          path: |
+            logs/
+            reports/
+          if-no-files-found: ignore
+          retention-days: 7
