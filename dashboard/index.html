@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📊 每日股票分析仪表盘</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📈 每日股票分析仪表盘</h1>
+      <div class="date-info">
+        <span id="current-date">--</span>
+        <span class="badge" id="market-status">加载中...</span>
+      </div>
+    </header>
+
+    <section class="market-overview">
+      <h2>🌏 大盘概况</h2>
+      <div class="index-cards" id="index-cards">
+        <div class="index-card loading">加载中...</div>
+      </div>
+    </section>
+
+    <section class="stock-list">
+      <div class="section-header">
+        <h2>📋 自选股分析</h2>
+        <div class="filters">
+          <button class="filter-btn active" data-filter="all">全部</button>
+          <button class="filter-btn" data-filter="buy">🟢 买入</button>
+          <button class="filter-btn" data-filter="hold">🟡 观望</button>
+          <button class="filter-btn" data-filter="sell">🔴 卖出</button>
+        </div>
+      </div>
+      <div class="stock-grid" id="stock-grid">
+        <div class="stock-card loading">正在获取数据...</div>
+      </div>
+    </section>
+
+    <section class="alerts-section">
+      <h2>🚨 风险警报 & 催化因素</h2>
+      <div class="alerts-grid" id="alerts-grid">
+        <div class="alert-card loading">加载中...</div>
+      </div>
+    </section>
+
+    <footer>
+      <p>数据来源: DeepSeek AI 分析 | 更新时间: <span id="update-time">--</span></p>
+      <p class="disclaimer">⚠️ 本分析仅供参考，不构成投资建议。股市有风险，投资需谨慎。</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
