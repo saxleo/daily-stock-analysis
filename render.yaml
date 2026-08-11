@@ -1,0 +1,34 @@
+# Render Blueprint 配置
+# 部署步骤：
+# 1. 访问 https://dashboard.render.com/blueprint
+# 2. 连接 GitHub 仓库 saxleo/daily-stock-analysis
+# 3. 点击 "Apply" 自动部署
+
+services:
+  - type: web
+    name: daily-stock-analysis
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python webui.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: WEBUI_HOST
+        value: 0.0.0.0
+      - key: WEBUI_PORT
+        value: 10000
+      - key: STOCK_LIST
+        value: 000021,002409,600584,600667,002436,600176,600487,600183,002837,002463,002602,002155,002230,159599,588710
+      - key: OPENAI_BASE_URL
+        value: https://api.deepseek.com
+      - key: OPENAI_MODEL
+        value: deepseek-chat
+      - key: MARKET_REVIEW_ENABLED
+        value: "true"
+      - key: AGENT_MODE
+        value: "true"
+    # 敏感信息需要在 Render Dashboard 手动配置：
+    # - OPENAI_API_KEY (或 DEEPSEEK_API_KEY)
+    # - FEISHU_WEBHOOK_URL
+    # - TAVILY_API_KEYS (可选)
